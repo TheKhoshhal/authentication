@@ -12,10 +12,14 @@ import (
 
 func main() {
 	e := echo.New()
-	
+
+	e.Use(middleware.Logger())
+
 	e.GET("/", func(ctx echo.Context) error {
 		return ctx.String(http.StatusOK, "Accessible")
 	})
+
+	e.Renderer = controllers.NewTemplates()
 
 	e.GET("/user/signin", controllers.SignInForm()).Name = "userSignInForm"
 	e.POST("/user/signin", controllers.SignIn())
@@ -28,12 +32,9 @@ func main() {
 		ErrorHandlerWithContext: auth.JWTErrorChecker,
 	}))
 
-	// Attach jwt token refresher.
 	adminGroup.Use(auth.TokenRefresherMiddleware)
-
 
 	adminGroup.GET("", controllers.Admin())
 
 	e.Logger.Fatal(e.Start(":8777"))
 }
-
