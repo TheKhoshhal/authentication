@@ -19,6 +19,11 @@ const (
 	jwtRefreshSecretKey = "some-refresh-secret-key"
 )
 
+type Claims struct {
+	Name  string `json:"name"`
+	jwt.StandardClaims
+}
+
 func GetJWTSecret() string {
 	return jwtSecretKey
 }
@@ -27,39 +32,13 @@ func GetRefreshJWTSecret() string {
 	return jwtRefreshSecretKey
 }
 
-// Create a struct that will be encoded to a JWT.
-// We add jwt.StandardClaims as an embedded type, to provide fields like expiry time
-type Claims struct {
-	Name  string `json:"name"`
-	jwt.StandardClaims
-}
-
-func GenerateTokensAndSetCookies(user *user.User, c echo.Context) error {
-	accessToken, exp, err := generateAccessToken(user)
-	if err != nil {
-		return err
-	}
-
-	setTokenCookie(accessTokenCookieName, accessToken, exp, c)
-	setUserCookie(user, exp, c)
-	refreshToken, exp, err := generateRefreshToken(user)
-	if err != nil {
-		return err
-	}
-	setTokenCookie(refreshTokenCookieName, refreshToken, exp, c)
-
-	return nil
-}
-
 func generateAccessToken(user *user.User) (string, time.Time, error) {
-	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(1 * time.Hour)
 
 	return generateToken(user, expirationTime, []byte(GetJWTSecret()))
 }
 
 func generateRefreshToken(user *user.User) (string, time.Time, error) {
-	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	return generateToken(user, expirationTime, []byte(GetRefreshJWTSecret()))
@@ -85,6 +64,23 @@ func generateToken(user *user.User, expirationTime time.Time, secret []byte) (st
 	}
 
 	return tokenString, expirationTime, nil
+}
+
+func GenerateTokensAndSetCookies(user *user.User, c echo.Context) error {
+	accessToken, exp, err := generateAccessToken(user)
+	if err != nil {
+		return err
+	}
+
+	setTokenCookie(accessTokenCookieName, accessToken, exp, c)
+	setUserCookie(user, exp, c)
+	refreshToken, exp, err := generateRefreshToken(user)
+	if err != nil {
+		return err
+	}
+	setTokenCookie(refreshTokenCookieName, refreshToken, exp, c)
+
+	return nil
 }
 
 func setTokenCookie(name, token string, expiration time.Time, c echo.Context) {
