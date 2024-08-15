@@ -39,6 +39,10 @@ func SignIn() echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
+		if u.Name != storedUser.Name {
+			return echo.NewHTTPError(http.StatusUnauthorized, "UserName not found")
+		}
+
 		if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password)); err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Password is incorrect")
 		}
