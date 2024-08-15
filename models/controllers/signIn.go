@@ -25,6 +25,18 @@ func NewTemplates() *Templates {
 	return t
 }
 
+type FormData struct {
+	Error  map[string]string
+	Values map[string]string
+}
+
+func NewFormData() *FormData {
+	f := new(FormData)
+	f.Error = make(map[string]string)
+	f.Values = make(map[string]string)
+	return f
+}
+
 func SignInForm() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return c.Render(http.StatusOK, "index", nil)
@@ -40,17 +52,27 @@ func SignIn() echo.HandlerFunc {
 		}
 
 		if u.Name != storedUser.Name {
-			return echo.NewHTTPError(http.StatusUnauthorized, "UserName not found")
+			formData := FormData{
+				Error:  map[string]string{"name": "UserName not found"},
+				Values: map[string]string{"username": u.Name, "password": u.Password},
+			}
+			return c.Render(http.StatusUnauthorized, "signin", formData)
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password)); err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Password is incorrect")
+			formData := FormData{
+				Error:  map[string]string{"name": "Password is incorrect"},
+				Values: map[string]string{"name": u.Name, "password": u.Password},
+			}
+			return c.Render(http.StatusUnauthorized, "signin", formData)
 		}
 		err := auth.GenerateTokensAndSetCookies(storedUser, c)
 
 		if err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Token is incorrect")
 		}
+
+		// formData := NewFormData()
 
 		return c.Redirect(http.StatusMovedPermanently, "/admin")
 	}
