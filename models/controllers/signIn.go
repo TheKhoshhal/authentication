@@ -26,14 +26,12 @@ func NewTemplates() *Templates {
 }
 
 type FormData struct {
-	Error  map[string]string
-	Values map[string]string
+	Error map[string]string
 }
 
 func NewFormData() *FormData {
 	f := new(FormData)
 	f.Error = make(map[string]string)
-	f.Values = make(map[string]string)
 	return f
 }
 
@@ -53,16 +51,14 @@ func SignIn() echo.HandlerFunc {
 
 		if u.Name != storedUser.Name {
 			formData := FormData{
-				Error:  map[string]string{"name": "UserName not found"},
-				Values: map[string]string{"username": u.Name, "password": u.Password},
+				Error: map[string]string{"value": "UserName not found", "username": ""},
 			}
 			return c.Render(http.StatusUnauthorized, "signin", formData)
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password)); err != nil {
 			formData := FormData{
-				Error:  map[string]string{"name": "Password is incorrect"},
-				Values: map[string]string{"name": u.Name, "password": u.Password},
+				Error: map[string]string{"value": "Password is incorrect", "username": u.Name},
 			}
 			return c.Render(http.StatusUnauthorized, "signin", formData)
 		}

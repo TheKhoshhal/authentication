@@ -31,15 +31,15 @@
     {{block "signin" .}}
     <form class="w-full" method="post" action="/user/signin">
       <label for="name">Name:</label>
-      <input type="text" id="name" name="name" />
+      <input type="text" id="name" name="name" value="{{.Error.username}}" />
       <br />
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" />
       <br />
       <button type="submit">Sign In</button>
     </form>
-    {{if (.Error)}} {{if (.Error.name)}}
-    <div class="error" style="color: red">{{.Error.name}}</div>
+    {{if (.Error)}} {{if (.Error.value)}}
+    <div class="error" style="color: red">{{.Error.value}}</div>
     {{end}} {{end}} {{end}}
   </body>
 </html>
