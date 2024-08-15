@@ -68,8 +68,6 @@ func SignIn() echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Token is incorrect")
 		}
 
-		// formData := NewFormData()
-
 		return c.Redirect(http.StatusMovedPermanently, "/admin")
 	}
 }
